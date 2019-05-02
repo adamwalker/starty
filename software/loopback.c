@@ -29,28 +29,36 @@ int main(int argc, char *argv[]) {
         int packet_size = packets % 960 + 64;
 
         for (size_t i=0; i<packet_size; i++)
-            buf[i] = packets;
+            buf[i] = packets + i;
 
         pcap_sendpacket(handle, buf, packet_size);
 
         packet = pcap_next(handle, &header);
 
-        //Packet hexdump
-        //printf("Packet with length [%d]\n", header.len);
-        //for (size_t i=0; i<header.len; i++){
-        //    printf("%02x ", packet[i]);
-        //    if (i%8 == 7)
-        //        printf("\n");
-        //}
-        //printf("\n\n");
-
         if(packet_size + 4 != header.len){
-            printf("Packet length mismatch: %d %d\n", packet_size, header.len);
+            //printf("Packet length mismatch: %d %d\n", packet_size, header.len);
             //return 1;
         }
 
         if(memcmp(packet, buf, packet_size)){
             printf("Packet contents mismatch\n");
+            printf("Expect:\n");
+            //Packet hexdump
+            for (size_t i=0; i<packet_size; i++){
+                printf("%02x ", 0xff & buf[i]);
+                if (i%8 == 7)
+                    printf("\n");
+            }
+            printf("\n\n");
+
+            //Packet hexdump
+            printf("Result:\n");
+            for (size_t i=0; i<header.len; i++){
+                printf("%02x ", 0xff & packet[i]);
+                if (i%8 == 7)
+                    printf("\n");
+            }
+            printf("\n\n");
             return 1;
         }
 
