@@ -8,7 +8,7 @@ Building is as easy as:
 ```
 $ vivado -mode batch -nojournal -source compile.tcl
 ```
-Once that completes, the bitfile and DCPs can be found in the "outputs" directory.
+Once that completes, the bitstream and DCPs can be found in the "outputs" directory.
 
 ## Functionality
 * System clock + buffer

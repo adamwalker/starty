@@ -68,24 +68,27 @@ write_checkpoint -force "${::output_dir}/post_synth.dcp"
 
 #Insert the ILA
 #See the section "Using XDC Commands to Insert Debug Cores" in UG908
-create_debug_core u_ila_0 ila
-
-set_property C_DATA_DEPTH          1024  [get_debug_cores u_ila_0]
-set_property C_TRIGIN_EN           false [get_debug_cores u_ila_0]
-set_property C_TRIGOUT_EN          false [get_debug_cores u_ila_0]
-set_property C_ADV_TRIGGER         false [get_debug_cores u_ila_0]
-set_property C_INPUT_PIPE_STAGES   0     [get_debug_cores u_ila_0]
-set_property C_EN_STRG_QUAL        false [get_debug_cores u_ila_0]
-set_property ALL_PROBE_SAME_MU     true  [get_debug_cores u_ila_0]
-set_property ALL_PROBE_SAME_MU_CNT 1     [get_debug_cores u_ila_0]
-
-set_property port_width 1 [get_debug_ports u_ila_0/clk]
-connect_debug_port u_ila_0/clk [get_nets eth_rx_clk_i]
-
 set debug_nets [lsort -dictionary [get_nets -hier -filter {mark_debug}]]
 set n_nets [llength $debug_nets]
-set_property port_width $n_nets [get_debug_ports u_ila_0/probe0]
-connect_debug_port u_ila_0/probe0 $debug_nets
+
+if { $n_nets > 0 } {
+    create_debug_core u_ila_0 ila
+
+    set_property C_DATA_DEPTH          1024  [get_debug_cores u_ila_0]
+    set_property C_TRIGIN_EN           false [get_debug_cores u_ila_0]
+    set_property C_TRIGOUT_EN          false [get_debug_cores u_ila_0]
+    set_property C_ADV_TRIGGER         false [get_debug_cores u_ila_0]
+    set_property C_INPUT_PIPE_STAGES   0     [get_debug_cores u_ila_0]
+    set_property C_EN_STRG_QUAL        false [get_debug_cores u_ila_0]
+    set_property ALL_PROBE_SAME_MU     true  [get_debug_cores u_ila_0]
+    set_property ALL_PROBE_SAME_MU_CNT 1     [get_debug_cores u_ila_0]
+
+    set_property port_width 1 [get_debug_ports u_ila_0/clk]
+    connect_debug_port u_ila_0/clk [get_nets eth_tx_clk_i]
+
+    set_property port_width $n_nets [get_debug_ports u_ila_0/probe0]
+    connect_debug_port u_ila_0/probe0 $debug_nets
+}
 
 #Continue with implementation
 opt_design
