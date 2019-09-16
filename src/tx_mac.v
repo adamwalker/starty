@@ -16,7 +16,7 @@ module tx_mac (
 );
 
 //Packet formatter state machine
-reg [4:0] packet_cnt;
+reg [5:0] packet_cnt;
 
 always @(posedge clk_tx) 
     if (packet_cnt == 0)       //Idle
@@ -25,16 +25,16 @@ always @(posedge clk_tx)
         packet_cnt <= packet_cnt + 1;
     else if (packet_cnt == 16) //Data
         packet_cnt <= packet_cnt + tx_eof;
-    else if (packet_cnt < 24)  //FCS 
+    else if (packet_cnt < 48) //FCS + interpacket gap
         packet_cnt <= packet_cnt + 1;
-    else                        //FCS done
+    else
         packet_cnt <= 0;
 
 //Ack if we're in a state were we can accept data
 assign tx_ack    = packet_cnt == 16;
 
 //Set the MII output signals
-assign mii_tx_en = tx_vld || |packet_cnt;
+assign mii_tx_en = (tx_vld || |packet_cnt) && (packet_cnt <= 24);
 
 always @(*) 
     //preamble
