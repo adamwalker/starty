@@ -23,6 +23,8 @@ The design flashes the LEDs in a pattern determined by the switches and buttons.
 
 The signals from the Ethernet phy RX side are captured by chipscope and the packet rx count is available from the VIO.
 
+See the `basic-ethernet` branch for a cut down version. 
+
 ## Software
 The "software" directory contains an application to test the Ethernet loopback. Build and run with:
 ```
