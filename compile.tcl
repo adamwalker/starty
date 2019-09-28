@@ -33,24 +33,11 @@ generate_target all [get_files  vio_0.xci]
 
 close_project
 
-create_project ip_project -in_memory -part xc7a35ticsg324-1L -ip
-
-create_ip -name mig_7series -vendor xilinx.com -library ip -version 4.2 -module_name mig_7series_0 -dir ${::ip_build_dir} -force
-
-set_property -dict [list CONFIG.XML_INPUT_FILE {../../mig.prj}] [get_ips mig_7series_0]
-
-generate_target {instantiation_template} [get_files mig_7series_0.xci]
-generate_target all [get_files  mig_7series_0.xci]
-synth_ip [get_ips]
-
-close_project
-
 #Create the project
 create_project -part xc7a35ticsg324-1l -in_memory 
 
 #Read the sources
 read_ip -verbose ${::ip_build_dir}/vio_0/vio_0.xci
-read_ip -verbose ${::ip_build_dir}/mig_7series_0/mig_7series_0.xci
 read_verilog -quiet [glob -nocomplain -directory src *.v]
 read_vhdl    -quiet [glob -nocomplain -directory src *.vhdl]
 read_xdc src/arty.xdc
