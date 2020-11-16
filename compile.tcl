@@ -5,11 +5,13 @@
 #Outputs go in outputs directory
 set ::output_dir "./outputs"
 file mkdir $::output_dir
+file mkdir ip
+set ::ip_build_dir "./ip/build"
+file mkdir $::ip_build_dir
 
 #Generate the VIO IP
-file mkdir ip
 create_project ip_project -in_memory -part xc7a35ticsg324-1L -ip
-create_ip -name vio -vendor xilinx.com -library ip -version 3.0 -module_name vio_0 -dir ip -force
+create_ip -name vio -vendor xilinx.com -library ip -version 3.0 -module_name vio_0 -dir ${::ip_build_dir} -force
 
 set_property -dict \
     [list \
@@ -33,9 +35,9 @@ close_project
 
 create_project ip_project -in_memory -part xc7a35ticsg324-1L -ip
 
-create_ip -name mig_7series -vendor xilinx.com -library ip -version 4.2 -module_name mig_7series_0 -dir ip -force
+create_ip -name mig_7series -vendor xilinx.com -library ip -version 4.2 -module_name mig_7series_0 -dir ${::ip_build_dir} -force
 
-set_property -dict [list CONFIG.XML_INPUT_FILE {mig.prj}] [get_ips mig_7series_0]
+set_property -dict [list CONFIG.XML_INPUT_FILE {../../mig.prj}] [get_ips mig_7series_0]
 
 generate_target {instantiation_template} [get_files mig_7series_0.xci]
 generate_target all [get_files  mig_7series_0.xci]
@@ -47,8 +49,8 @@ close_project
 create_project -part xc7a35ticsg324-1l -in_memory 
 
 #Read the sources
-read_ip -verbose ip/vio_0/vio_0.xci
-read_ip -verbose ip/mig_7series_0/mig_7series_0.xci
+read_ip -verbose ${::ip_build_dir}/vio_0/vio_0.xci
+read_ip -verbose ${::ip_build_dir}/mig_7series_0/mig_7series_0.xci
 read_verilog -quiet [glob -nocomplain -directory src *.v]
 read_vhdl    -quiet [glob -nocomplain -directory src *.vhdl]
 read_xdc src/arty.xdc
@@ -58,7 +60,7 @@ auto_detect_xpm
 
 #Do the IP dance
 upgrade_ip [get_ips]
-set_property generate_synth_checkpoint false [get_files ip/vio_0/vio_0.xci]
+set_property generate_synth_checkpoint false [get_files ${::ip_build_dir}/vio_0/vio_0.xci]
 generate_target all [get_ips]
 validate_ip -verbose [get_ips]
 
