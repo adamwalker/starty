@@ -1,0 +1,6 @@
+outputs
+.ip_user_files
+.Xil
+*.log
+*.html
+*.xml
