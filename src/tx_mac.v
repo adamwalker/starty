@@ -36,6 +36,8 @@ assign tx_ack    = packet_cnt == 16;
 //Set the MII output signals
 assign mii_tx_en = (tx_vld || |packet_cnt) && (packet_cnt <= 24);
 
+reg [31:0] crc_final = 32'hffffffff;
+
 always @(*) 
     //preamble
     if (packet_cnt <= 14)
@@ -54,8 +56,6 @@ always @(*)
 //CRC calculation
 integer i;
 reg [31:0] crc_i [0:4];
-
-reg [31:0] crc_final = 32'hffffffff;
 
 always @(posedge clk_tx) 
     if (tx_vld && packet_cnt == 16)
