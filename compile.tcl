@@ -1,83 +1,20 @@
 #Compile TCL script for Arty project template
-#Configure the VIO input/output ports in the "Generate the VIO IP" section
-#Configure the ILA clock in the "Insert the ILA" section
 
 #Outputs go in outputs directory
 set ::output_dir "./outputs"
 file mkdir $::output_dir
-file mkdir ip
-set ::ip_build_dir "./ip/build"
-file mkdir $::ip_build_dir
-
-#Generate the VIO IP
-create_project ip_project -in_memory -part xc7a35ticsg324-1L -ip
-create_ip -name vio -vendor xilinx.com -library ip -version 3.0 -module_name vio_0 -dir ${::ip_build_dir} -force
-
-set_property -dict \
-    [list \
-        CONFIG.C_PROBE_OUT0_WIDTH {64} \
-        CONFIG.C_PROBE_OUT1_WIDTH {64} \
-        CONFIG.C_PROBE_OUT2_WIDTH {64} \
-        CONFIG.C_PROBE_OUT3_WIDTH {64} \
-        CONFIG.C_PROBE_IN0_WIDTH  {64} \
-        CONFIG.C_PROBE_IN1_WIDTH  {64} \
-        CONFIG.C_PROBE_IN2_WIDTH  {64} \
-        CONFIG.C_PROBE_IN3_WIDTH  {64} \
-        CONFIG.C_NUM_PROBE_OUT    {4}   \
-        CONFIG.C_NUM_PROBE_IN     {4}   \
-    ] \
-    [get_ips vio_0]
-
-generate_target {instantiation_template} [get_files vio_0.xci]
-generate_target all [get_files  vio_0.xci]
-
-close_project
 
 #Create the project
 create_project -part xc7a35ticsg324-1l -in_memory 
 
 #Read the sources
-read_ip -verbose ${::ip_build_dir}/vio_0/vio_0.xci
 read_verilog -quiet [glob -nocomplain -directory src *.v]
 read_vhdl    -quiet [glob -nocomplain -directory src *.vhdl]
 read_xdc src/arty.xdc
 
-#Enable xilinx XPM modules
-auto_detect_xpm
-
-#Do the IP dance
-upgrade_ip [get_ips]
-set_property generate_synth_checkpoint false [get_files ${::ip_build_dir}/vio_0/vio_0.xci]
-generate_target all [get_ips]
-validate_ip -verbose [get_ips]
-
 #Synthesize the design
 synth_design -top top -flatten_hierarchy rebuilt
 write_checkpoint -force "${::output_dir}/post_synth.dcp"
-
-#Insert the ILA
-#See the section "Using XDC Commands to Insert Debug Cores" in UG908
-set debug_nets [lsort -dictionary [get_nets -hier -filter {mark_debug}]]
-set n_nets [llength $debug_nets]
-
-if { $n_nets > 0 } {
-    create_debug_core u_ila_0 ila
-
-    set_property C_DATA_DEPTH          1024  [get_debug_cores u_ila_0]
-    set_property C_TRIGIN_EN           false [get_debug_cores u_ila_0]
-    set_property C_TRIGOUT_EN          false [get_debug_cores u_ila_0]
-    set_property C_ADV_TRIGGER         false [get_debug_cores u_ila_0]
-    set_property C_INPUT_PIPE_STAGES   0     [get_debug_cores u_ila_0]
-    set_property C_EN_STRG_QUAL        false [get_debug_cores u_ila_0]
-    set_property ALL_PROBE_SAME_MU     true  [get_debug_cores u_ila_0]
-    set_property ALL_PROBE_SAME_MU_CNT 1     [get_debug_cores u_ila_0]
-
-    set_property port_width 1 [get_debug_ports u_ila_0/clk]
-    connect_debug_port u_ila_0/clk [get_nets eth_tx_clk_i]
-
-    set_property port_width $n_nets [get_debug_ports u_ila_0/probe0]
-    connect_debug_port u_ila_0/probe0 $debug_nets
-}
 
 #Continue with implementation
 opt_design
@@ -110,10 +47,8 @@ set_property CFGBVS VCCO [current_design]
 
 #Outputs
 write_bitstream "${::output_dir}/arty.bit" -force
-write_debug_probes "${::output_dir}/arty.ltx" -force
 
 #Flash image
 write_cfgmem -format mcs -interface spix4 -size 16 \
 	-loadbit "up 0 ${::output_dir}/arty.bit" \
 	-file ${::output_dir}/arty.mcs -force
-
