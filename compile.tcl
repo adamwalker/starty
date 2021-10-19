@@ -113,7 +113,20 @@ report_clocks -file "${::output_dir}/clocks.rpt"
 report_timing_summary -file "${::output_dir}/timing.rpt"
 report_utilization -file "${::output_dir}/utilization.rpt"
 
+set_property BITSTREAM.CONFIG.CONFIGRATE 33 [current_design]
+set_property BITSTREAM.CONFIG.SPI_32BIT_ADDR NO [current_design]
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+set_property BITSTREAM.CONFIG.CCLKPIN PULLNONE [current_design]
+set_property CONFIG_VOLTAGE 3.3 [current_design]
+set_property CFGBVS VCCO [current_design]
+
 #Outputs
 write_bitstream "${::output_dir}/arty.bit" -force
 write_debug_probes "${::output_dir}/arty.ltx" -force
+
+#Flash image
+write_cfgmem -format mcs -interface spix4 -size 16 \
+	-loadbit "up 0 ${::output_dir}/arty.bit" \
+	-file ${::output_dir}/arty.mcs -force
 
