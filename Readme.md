@@ -10,6 +10,13 @@ $ vivado -mode batch -nojournal -source compile.tcl
 ```
 Once that completes, the bitstream and DCPs can be found in the "outputs" directory.
 
+# Programming
+
+```
+$ cd program
+$ ./program.sh
+```
+
 ## Functionality
 * System clock + buffer
 * GPIO (switches, buttons, LEDs)
