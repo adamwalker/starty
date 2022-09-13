@@ -126,7 +126,7 @@ write_bitstream "${::output_dir}/arty.bit" -force
 write_debug_probes "${::output_dir}/arty.ltx" -force
 
 #Flash image
-write_cfgmem -format mcs -interface spix4 -size 16 \
+write_cfgmem -format bin -interface spix4 -size 16 \
 	-loadbit "up 0 ${::output_dir}/arty.bit" \
 	-file ${::output_dir}/arty.mcs -force
 
